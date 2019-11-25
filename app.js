@@ -96,8 +96,7 @@ const deletePost = (req, res) => {
 app.get('/api/v1/posts', getAllPosts);
 app.post('/api/v1/posts', createPost);
 app.get('/api/v1/posts/:id', getPost);
-app.patch('/api/v1/posts/:id', updateTour);
-
+app.patch('/api/v1/posts/:id', updatePost);
 app.delete('/api/v1/posts/:id', deletePost);
 
 const port = 4000;
