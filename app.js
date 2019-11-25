@@ -1,16 +1,26 @@
 const fs = require('fs');
 const cors = require('cors');
 const express = require('express');
+const morgan = require('morgan');
 
 const app = express();
-app.use(express.json());
 
+// MIDDLEWARES
+app.use(morgan('dev'));
+
+app.use(express.json());
 app.use(cors());
+
+app.use((req, res, next) => {
+    req.requestTime = new Date().getTime()/1000;
+    next();
+});
 
 const posts = JSON.parse(
     fs.readFileSync(`${__dirname}/dev-data/data/posts.json`)
 );
 
+// ROUTE HANDLERS
 const getAllPosts = (req, res) => {
     res.status(200).json({
         status: 'success',
@@ -44,6 +54,8 @@ const createPost = (req, res) => {
         kind: "t3",
         data: {
             id: newId,
+            visited: false,
+            created: req.requestTime,
             ...req.body
         }
     };
@@ -63,6 +75,8 @@ const createPost = (req, res) => {
 const updatePost = (req, res) => {
     const children = posts.data.children;
     const post = children.find(el => el.data.id === req.params.id);
+
+    console.log(post);
 
     if(!post) {
         res.status(404).json({
@@ -93,14 +107,25 @@ const deletePost = (req, res) => {
     });
 }
 
-app.get('/api/v1/posts', getAllPosts);
-app.post('/api/v1/posts', createPost);
-app.get('/api/v1/posts/:id', getPost);
-app.patch('/api/v1/posts/:id', updatePost);
-app.delete('/api/v1/posts/:id', deletePost);
+// ROUTES
+const postRouter = express.Router();
+app.use('/api/v1/posts', postRouter);
+
+
+postRouter
+    .route('/')
+    .get(getAllPosts)
+    .post(createPost);
+
+postRouter
+    .route('/:id')
+    .get(getPost)
+    .patch(updatePost)
+    .delete(deletePost)
 
 const port = 4000;
 
+//START SERVER
 app.listen(port, () => {
     console.log(`App running on port ${port}`)
 });
