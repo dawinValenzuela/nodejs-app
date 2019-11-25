@@ -11,14 +11,31 @@ const posts = JSON.parse(
     fs.readFileSync(`${__dirname}/dev-data/data/posts.json`)
 );
 
-app.get('/api/v1/posts', (req, res) => {
+const getAllPosts = (req, res) => {
     res.status(200).json({
         status: 'success',
         ...posts
     });
-});
+}
 
-app.post('/api/v1/posts',(req, res) => {
+const getPost = (req, res) => {
+    const children = posts.data.children;
+    const post = children.find(el => el.data.id === req.params.id);
+
+    if(!post) {
+        res.status(404).json({
+            status: 'fail',
+            message: 'Invalid Id'
+        });
+    }
+
+    res.status(200).json({
+        status: 'success',
+        post
+    });
+}
+
+const createPost = (req, res) => {
     const children = posts.data.children;
 
     const newId = children[children.length  -1].data.id + 1;
@@ -41,26 +58,9 @@ app.post('/api/v1/posts',(req, res) => {
             }
         })
     });
-});
+}
 
-app.get('/api/v1/posts/:id', (req, res) => {
-    const children = posts.data.children;
-    const post = children.find(el => el.data.id === req.params.id);
-
-    if(!post) {
-        res.status(404).json({
-            status: 'fail',
-            message: 'Invalid Id'
-        });
-    }
-
-    res.status(200).json({
-        status: 'success',
-        post
-    });
-});
-
-app.patch('/api/v1/posts/:id', (req, res) => {
+const updatePost = (req, res) => {
     const children = posts.data.children;
     const post = children.find(el => el.data.id === req.params.id);
 
@@ -75,9 +75,9 @@ app.patch('/api/v1/posts/:id', (req, res) => {
         status: 'success',
         post
     })
-});
+}
 
-app.delete('/api/v1/posts/:id', (req, res) => {
+const deletePost = (req, res) => {
     const children = posts.data.children;
     const post = children.find(el => el.data.id === req.params.id);
 
@@ -91,7 +91,14 @@ app.delete('/api/v1/posts/:id', (req, res) => {
     res.status(204).json({
         status: 'success'
     });
-});
+}
+
+app.get('/api/v1/posts', getAllPosts);
+app.post('/api/v1/posts', createPost);
+app.get('/api/v1/posts/:id', getPost);
+app.patch('/api/v1/posts/:id', updateTour);
+
+app.delete('/api/v1/posts/:id', deletePost);
 
 const port = 4000;
 
