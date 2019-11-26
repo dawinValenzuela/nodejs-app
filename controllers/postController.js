@@ -7,10 +7,13 @@ const posts = JSON.parse(
 );
 */
 exports.getAllPosts = async (req, res) => {
-  
-  const allPost = await Post.find({});
+  let filter = {};
 
-  const features = new APIFeatures(Post.find(), req.query).filter().paginate();
+  const allPost = await Post.find();
+  const features = new APIFeatures(Post.find(filter), req.query)
+    .filter()
+    .paginate();
+
   const posts = await features.query;
 
   res.status(200).json({
@@ -59,22 +62,23 @@ exports.createPost = async (req, res) => {
   }
 };
 
-exports.updatePost = (req, res) => {
-  const children = posts.data.children;
-  const post = children.find(el => el.data.id === req.params.id);
+exports.updatePost = async (req, res) => {
+  console.log(req.body)
 
-  //console.log(post);
+  const post = await Post.findByIdAndUpdate(req.params.id, req.body, {
+    new: true,
+    runValidators: true
+  });
 
   if (!post) {
-    res.status(404).json({
-      status: "fail",
-      message: "Invalid Id"
-    });
+    return next(new AppError('No post found with that ID', 404));
   }
 
   res.status(200).json({
-    status: "success",
-    post
+    status: 'success',
+    data: {
+      post
+    }
   });
 };
 
