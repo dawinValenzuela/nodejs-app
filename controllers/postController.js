@@ -10,7 +10,7 @@ exports.getAllPosts = async (req, res) => {
   
   const allPost = await Post.find({});
 
-  const features = new APIFeatures(Post.find(), req.query).paginate();
+  const features = new APIFeatures(Post.find(), req.query).filter().paginate();
   const posts = await features.query;
 
   res.status(200).json({
